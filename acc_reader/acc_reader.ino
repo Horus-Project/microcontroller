@@ -11,21 +11,10 @@
 //default I2C addr of the accelerometer
 #define MPU_ADDR 0x68
 
-//Conversion rates
-#define A_R 16384.0 //32768 / 2
-#define G_R 131.0 //32768 / 250
-
-#define RAD_TO_DEG 57.295779 // 180/PI
-
 int16_t AcX, AcY, AcZ;
 int16_t maxX, maxY, maxZ;
-int16_t temp, gx, gy, gz;
-float Acc[2];
 
 String values;
-
-long prev_t;
-float dt;
 
 void setup() {
   Wire.begin(21,22); // D2 (GPIO12) = SDA | D1(GPIO22)=SCL | default I2C ports
