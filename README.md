@@ -12,3 +12,8 @@ ESP32 vibration detection and logging project
 * 5pcs Mini SD Card Module Memory Module Micro SD Card Module AVR ARM
 * Catalex MicroSD card adapter
 
+## ESP32 Programming
+
+### SD Card module
+
+* [SD Card Module with Arduino: How to Read/Write Data](https://create.arduino.cc/projecthub/electropeak/sd-card-module-with-arduino-how-to-read-write-data-37f390)
