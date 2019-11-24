@@ -7,10 +7,14 @@
 //D25 ...... SCL
 //D21 ...... SCA
 
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
 
 // accelerometer
 #define MPU_ADDR 0x68 //default I2C addr
 #define MPU_PWR_MGMT_1 0x6B
+
 
 #define DEBUG 1
 #define LED 2
@@ -32,6 +36,7 @@ void setup() {
   Wire.endTransmission(true);
   Serial.begin(115200);
   pinMode(LED, OUTPUT);
+  SDSetup();
   calibrate();
   Serial.println("setup done");
 }
@@ -100,6 +105,51 @@ void read_acc()
     if (AcZ > maxZ) {
       values = values + "Z";
     }
+
+    values = values + "\n";
+    char tab2[1024];
+    strcpy(tab2, values.c_str());
     Serial.println(values);
+    appendFile(SD, "/results.txt", tab2);
   }
+}
+
+void SDSetup() {
+  if(!SD.begin()){
+    Serial.println("Card Mount Failed");
+    return;
+  }
+  writeFile(SD, "/results.txt", "Hello!");
+}
+
+void writeFile(fs::FS &fs, const char * path, const char * message){
+    Serial.printf("Writing file: %s\n", path);
+
+    File file = fs.open(path, FILE_WRITE);
+    if(!file){
+        Serial.println("Failed to open file for writing");
+        return;
+    }
+    if(file.print(message)){
+        Serial.println("File written");
+    } else {
+        Serial.println("Write failed");
+    }
+    file.close();
+}
+
+void appendFile(fs::FS &fs, const char * path, const char * message){
+    Serial.printf("Appending to file: %s\n", path);
+
+    File file = fs.open(path, FILE_APPEND);
+    if(!file){
+        Serial.println("Failed to open file for appending");
+        return;
+    }
+    if(file.print(message)){
+        Serial.println("Message appended");
+    } else {
+        Serial.println("Append failed");
+    }
+    file.close();
 }
