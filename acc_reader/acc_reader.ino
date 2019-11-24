@@ -8,32 +8,30 @@
 //D21 ...... SCA
 
 
-//default I2C addr of the accelerometer
-#define MPU_ADDR 0x68
-#define DEBUG 1
+// accelerometer
+#define MPU_ADDR 0x68 //default I2C addr
+#define MPU_PWR_MGMT_1 0x6B
 
-int16_t AcX, AcY, AcZ;
-int16_t maxX, maxY, maxZ;
+#define DEBUG 1
+#define LED 2
+
+int16_t AcX, AcY, AcZ; // Accelerometer variables
+int16_t maxX, maxY, maxZ; // Threshold to detect relevant movement
 
 String values;
+String calibration_result;
 
 #define CALIBRATION_DURATION 3000 // calibration is 3s long
-unsigned long t;
+unsigned long t; // timer
 
 void setup() {
   Wire.begin(21,22); // D2 (GPIO12) = SDA | D1(GPIO22)=SCL | default I2C ports
   Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x6B); // PWR_MGMT_1 => turn on MPU
+  Wire.write(MPU_PWR_MGMT_1); // PWR_MGMT_1 => turn on MPU
   Wire.write(0);
   Wire.endTransmission(true);
   Serial.begin(115200);
-
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3B); // ACCEL_XOUT_H
-  Wire.endTransmission();
-  Wire.requestFrom(MPU_ADDR,6,true);
-  
-  Serial.println("calibrating");
+  pinMode(LED, OUTPUT);
   calibrate();
   Serial.println("setup done");
 }
@@ -43,18 +41,17 @@ void loop() {
   read_acc();
 
   if ( AcY > maxY && AcZ > maxZ) { //AcX > maxX &&
-    digitalWrite(2, HIGH);
+    digitalWrite(LED, HIGH);
   } else {
-    digitalWrite(2, LOW);
+    digitalWrite(LED, LOW);
   }
   
   delay(10);
 }
 
-
-String calibration_result;
 void calibrate()
 {
+  Serial.println("calibrating");
   t = millis();
   while(t < CALIBRATION_DURATION){
     // read values, keep calibration maxes
@@ -75,14 +72,34 @@ void calibrate()
   Serial.println(calibration_result);
 }
 
+// Puts the lectures of the accelerometer 
+// in the global vairables
 void read_acc() 
 {
-  AcX =Wire.read()<<8|Wire.read();
-  AcY =Wire.read()<<8|Wire.read();
-  AcZ =Wire.read()<<8|Wire.read();
+  Wire.beginTransmission(MPU_ADDR);
+  Wire.write(0x3B); // ACCEL_XOUT_H
+  Wire.endTransmission();
+  Wire.requestFrom(MPU_ADDR,6,true);
+  
+  AcX = Wire.read()<<8|Wire.read();
+  AcY = Wire.read()<<8|Wire.read();
+  AcZ = Wire.read()<<8|Wire.read();
+
+  AcX = abs(AcX);
+  AcY = abs(AcY);
+  AcZ = abs(AcZ);
 
   if(DEBUG) {
-    values = "X: "+String(AcX) + " Y: "+String(AcY)+" Z: "+String(AcZ)+ " Maxes: ("+String(maxX)+","+String(maxY)+","+String(maxZ)+")";
+    values = "X: "+String(AcX) + " Y: "+String(AcY)+" Z: "+String(AcZ)+ " Maxes: ("+String(maxX)+","+String(maxY)+","+String(maxZ)+") ";
+    if (AcX > maxX) {
+      values = values + "X";
+    }
+    if (AcY > maxY) {
+      values = values + "Y";
+    }
+    if (AcZ > maxZ) {
+      values = values + "Z";
+    }
     Serial.println(values);
   }
 }
