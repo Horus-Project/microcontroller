@@ -15,5 +15,13 @@ ESP32 vibration detection and logging project
 ## ESP32 Programming
 
 ### SD Card module
+| ESP32 | SD module |
+|:-:|:-:|
+| 3V3 | 3V3 |
+| GND | GND |
+| D5 | CS |
+| D18 | CLK |
+| D19 | MISO |
+| D23 | MOSI |
 
 * [SD Card Module with Arduino: How to Read/Write Data](https://create.arduino.cc/projecthub/electropeak/sd-card-module-with-arduino-how-to-read-write-data-37f390)
