@@ -50,7 +50,7 @@ void loop() {
   } else {
     digitalWrite(LED, LOW);
   }
-  
+
   delay(10);
 }
 
@@ -77,15 +77,15 @@ void calibrate()
   Serial.println(calibration_result);
 }
 
-// Puts the lectures of the accelerometer 
+// Puts the lectures of the accelerometer
 // in the global vairables
-void read_acc() 
+void read_acc()
 {
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x3B); // ACCEL_XOUT_H
   Wire.endTransmission();
   Wire.requestFrom(MPU_ADDR,6,true);
-  
+
   AcX = Wire.read()<<8|Wire.read();
   AcY = Wire.read()<<8|Wire.read();
   AcZ = Wire.read()<<8|Wire.read();
@@ -107,9 +107,9 @@ void read_acc()
     }
 
     values = values + "\n";
+    Serial.println(values);
     char tab2[1024];
     strcpy(tab2, values.c_str());
-    Serial.println(values);
     appendFile(SD, "/results.txt", tab2);
   }
 }
@@ -119,23 +119,6 @@ void SDSetup() {
     Serial.println("Card Mount Failed");
     return;
   }
-  writeFile(SD, "/results.txt", "Hello!");
-}
-
-void writeFile(fs::FS &fs, const char * path, const char * message){
-    Serial.printf("Writing file: %s\n", path);
-
-    File file = fs.open(path, FILE_WRITE);
-    if(!file){
-        Serial.println("Failed to open file for writing");
-        return;
-    }
-    if(file.print(message)){
-        Serial.println("File written");
-    } else {
-        Serial.println("Write failed");
-    }
-    file.close();
 }
 
 void appendFile(fs::FS &fs, const char * path, const char * message){
