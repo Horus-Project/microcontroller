@@ -1,5 +1,3 @@
-#include <Wire.h>
-
 // Connection map
 //ESP32      GY521/MPU6050
 //3V3 ...... VCC
@@ -7,6 +5,9 @@
 //D25 ...... SCL
 //D21 ...... SCA
 
+#include <Wire.h>
+#include <WiFi.h>
+#include "time.h"
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
@@ -15,12 +16,11 @@
 #define MPU_ADDR 0x68 //default I2C addr
 #define MPU_PWR_MGMT_1 0x6B
 
-
 #define DEBUG 1
 #define LED 2
 
-int16_t AcX, AcY, AcZ; // Accelerometer variables
-int16_t maxX, maxY, maxZ; // Threshold to detect relevant movement
+int16_t a_x, a_y, a_z; // Accelerometer variables
+int16_t max_x, max_y, max_z; // Threshold to detect relevant movement
 
 String values;
 String calibration_result;
@@ -28,100 +28,77 @@ String calibration_result;
 #define CALIBRATION_DURATION 3000 // calibration is 3s long
 unsigned long t; // timer
 
-void setup() {
-  Wire.begin(21,22); // D2 (GPIO12) = SDA | D1(GPIO22)=SCL | default I2C ports
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(MPU_PWR_MGMT_1); // PWR_MGMT_1 => turn on MPU
-  Wire.write(0);
-  Wire.endTransmission(true);
-  Serial.begin(115200);
-  pinMode(LED, OUTPUT);
-  SDSetup();
-  calibrate();
-  Serial.println("setup done");
-}
+//timer and WiFi
+const char* ssid       = "";
+const char* password   = "";
 
-void loop() {
+const char* ntp_server = "pool.ntp.org";
+const long  gmt_offset_sec = 3600;
+const int   daylight_offset_sec = 3600;
 
-  read_acc();
+struct tm timeinfo;
 
-  if ( AcY > maxY && AcZ > maxZ) { //AcX > maxX &&
-    digitalWrite(LED, HIGH);
-  } else {
-    digitalWrite(LED, LOW);
-  }
 
-  delay(10);
-}
-
-void calibrate()
-{
+void calibrate() {
   Serial.println("calibrating");
   t = millis();
   while(t < CALIBRATION_DURATION){
     // read values, keep calibration maxes
     read_acc();
-    if (AcX > maxX) {
-      maxX = AcX;
+    if (a_x > max_x) {
+      max_x = a_x;
     }
-    if (AcY > maxY) {
-      maxY = AcY;
+    if (a_y > max_y) {
+      max_y = a_y;
     }
-    if (AcZ > maxZ) {
-      maxZ = AcZ;
+    if (a_z > max_z) {
+      max_z = a_z;
     }
     delay(10);
     t = millis();
   }
-  calibration_result = "maxX: "+String(maxX)+" maxY: "+String(maxY)+" maxZ: "+String(maxZ);
+  calibration_result = "max_x: "+String(max_x)+" max_y: "+String(max_y)+" max_z: "+String(max_z);
   Serial.println(calibration_result);
 }
 
 // Puts the lectures of the accelerometer
 // in the global vairables
-void read_acc()
-{
+void read_acc() {
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x3B); // ACCEL_XOUT_H
   Wire.endTransmission();
   Wire.requestFrom(MPU_ADDR,6,true);
 
-  AcX = Wire.read()<<8|Wire.read();
-  AcY = Wire.read()<<8|Wire.read();
-  AcZ = Wire.read()<<8|Wire.read();
+  a_x = Wire.read()<<8|Wire.read();
+  a_y = Wire.read()<<8|Wire.read();
+  a_z = Wire.read()<<8|Wire.read();
 
-  AcX = abs(AcX);
-  AcY = abs(AcY);
-  AcZ = abs(AcZ);
+  a_x = abs(a_x);
+  a_y = abs(a_y);
+  a_z = abs(a_z);
 
   if(DEBUG) {
-    values = "X: "+String(AcX) + " Y: "+String(AcY)+" Z: "+String(AcZ)+ " Maxes: ("+String(maxX)+","+String(maxY)+","+String(maxZ)+") ";
-    if (AcX > maxX) {
+    values = "X: "+String(a_x) + " Y: "+String(a_y)+" Z: "+String(a_z)+ " Maxes: ("+String(max_x)+","+String(max_y)+","+String(max_z)+") ";
+    if (a_x > max_x) {
       values = values + "X";
     }
-    if (AcY > maxY) {
+    if (a_y > max_y) {
       values = values + "Y";
     }
-    if (AcZ > maxZ) {
+    if (a_z > max_z) {
       values = values + "Z";
     }
-
-    values = values + "\n";
-    Serial.println(values);
-    char tab2[1024];
-    strcpy(tab2, values.c_str());
-    appendFile(SD, "/results.txt", tab2);
   }
 }
 
-void SDSetup() {
+void SD_setup() {
   if(!SD.begin()){
     Serial.println("Card Mount Failed");
     return;
   }
 }
 
-void appendFile(fs::FS &fs, const char * path, const char * message){
+void append_file(fs::FS &fs, const char * path, const char * message) {
     Serial.printf("Appending to file: %s\n", path);
 
     File file = fs.open(path, FILE_APPEND);
@@ -135,4 +112,58 @@ void appendFile(fs::FS &fs, const char * path, const char * message){
         Serial.println("Append failed");
     }
     file.close();
+}
+
+void timer_setup() {
+  Serial.begin(115200);
+  Serial.printf("Connecting to %s ", ssid);
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+  }
+  Serial.println(" CONNECTED");
+  configTime(gmt_offset_sec, daylight_offset_sec, ntp_server);
+
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+}
+
+void setup() {
+  Wire.begin(21,22); // D2 (GPIO12) = SDA | D1(GPIO22)=SCL | default I2C ports
+  Wire.beginTransmission(MPU_ADDR);
+  Wire.write(MPU_PWR_MGMT_1); // PWR_MGMT_1 => turn on MPU
+  Wire.write(0);
+  Wire.endTransmission(true);
+  Serial.begin(115200);
+  pinMode(LED, OUTPUT);
+  timer_setup();
+  SD_setup();
+  calibrate();
+  Serial.println("setup done");
+}
+
+void loop() {
+  read_acc();
+  if (a_y > max_y && a_z > max_z) { //a_x > max_x &&
+    digitalWrite(LED, HIGH);
+  } else {
+    digitalWrite(LED, LOW);
+  }
+
+  //write values
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+  }
+  char timestamp[20];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
+  
+  values = String(timestamp) + ";" + values + "\n";
+  Serial.println(values);
+  char results[1024];
+  strcpy(results, values.c_str());
+  append_file(SD, "/results.txt", results);
+  
+  delay(10);
 }
