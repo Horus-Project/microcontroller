@@ -17,6 +17,7 @@
 #define MPU_PWR_MGMT_1 0x6B
 
 #define DEBUG 1
+#define SD_DEBUG 0
 #define LED 2
 
 int16_t a_x, a_y, a_z; // Accelerometer variables
@@ -29,8 +30,8 @@ String calibration_result;
 unsigned long t; // timer
 
 //timer and WiFi
-const char* ssid       = "";
-const char* password   = "";
+const char* ssid       = "ONO38B2";
+const char* password   = "S780tSzc0T4j";
 
 const char* ntp_server = "pool.ntp.org";
 const long  gmt_offset_sec = 3600;
@@ -42,7 +43,8 @@ struct tm timeinfo;
 void calibrate() {
   Serial.println("calibrating");
   t = millis();
-  while(t < CALIBRATION_DURATION){
+  unsigned long calibration_end = t + CALIBRATION_DURATION;
+  while(t < calibration_end){
     // read values, keep calibration maxes
     read_acc();
     if (a_x > max_x) {
@@ -99,17 +101,25 @@ void SD_setup() {
 }
 
 void append_file(fs::FS &fs, const char * path, const char * message) {
-    Serial.printf("Appending to file: %s\n", path);
+    if (SD_DEBUG) {
+      Serial.printf("Appending to file: %s\n", path);
+    }
 
     File file = fs.open(path, FILE_APPEND);
     if(!file){
-        Serial.println("Failed to open file for appending");
+        if (SD_DEBUG) {
+            Serial.println("Failed to open file for appending");
+        }
         return;
     }
     if(file.print(message)){
-        Serial.println("Message appended");
+        if (SD_DEBUG) {
+            Serial.println("Message appended");
+        }
     } else {
-        Serial.println("Append failed");
+        if (SD_DEBUG) {
+            Serial.println("Append failed");
+        }
     }
     file.close();
 }
@@ -160,7 +170,9 @@ void loop() {
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
   
   values = String(timestamp) + ";" + values + "\n";
-  Serial.println(values);
+  if (DEBUG) {
+    Serial.println(values);
+  }
   char results[1024];
   strcpy(results, values.c_str());
   append_file(SD, "/results.txt", results);
