@@ -30,8 +30,8 @@ String calibration_result;
 unsigned long t; // timer
 
 //timer and WiFi
-const char* ssid       = "ONO38B2";
-const char* password   = "S780tSzc0T4j";
+const char* ssid       = "";
+const char* password   = "";
 
 const char* ntp_server = "pool.ntp.org";
 const long  gmt_offset_sec = 3600;
@@ -127,7 +127,9 @@ void append_file(fs::FS &fs, const char * path, const char * message) {
 void timer_setup() {
   Serial.begin(115200);
   Serial.printf("Connecting to %s ", ssid);
-
+  if (ssid == "" or password == "") {
+    Serial.println("SSID or PASSWORD are not set!");
+  }
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
