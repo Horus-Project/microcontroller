@@ -8,9 +8,7 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include "time.h"
-#include "FS.h"
 #include "SD.h"
-#include "SPI.h"
 
 #define DEBUG 1
 #define SD_DEBUG 0
@@ -33,38 +31,6 @@ const int   daylight_offset_sec = 3600;
 
 struct tm timeinfo;
 
-
-void SD_setup() {
-  if(!SD.begin()){
-    Serial.println("Card Mount Failed");
-    return;
-  }
-}
-
-void append_file(fs::FS &fs, const char * path, const char * message) {
-    if (SD_DEBUG) {
-      Serial.printf("Appending to file: %s\n", path);
-    }
-
-    File file = fs.open(path, FILE_APPEND);
-    if(!file){
-        if (SD_DEBUG) {
-            Serial.println("Failed to open file for appending");
-        }
-        return;
-    }
-    if(file.print(message)){
-        if (SD_DEBUG) {
-            Serial.println("Message appended");
-        }
-    } else {
-        if (SD_DEBUG) {
-            Serial.println("Append failed");
-        }
-    }
-    file.close();
-}
-
 void timer_setup() {
   Serial.begin(115200);
   Serial.printf("Connecting to %s ", ssid);
@@ -79,16 +45,13 @@ void timer_setup() {
   Serial.println(" CONNECTED");
   configTime(gmt_offset_sec, daylight_offset_sec, ntp_server);
 
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_OFF);
+  //WiFi.disconnect(true);
+  //WiFi.mode(WIFI_OFF);
 }
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("calling acc setup");
   accelerometer_setup();
-  Serial.println("acc setup done??");
-//  Serial.begin(115200);
   pinMode(LED, OUTPUT);
   timer_setup();
   SD_setup();
