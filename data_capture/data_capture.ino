@@ -23,8 +23,8 @@ String values;
 unsigned long t; // timer
 
 //timer and WiFi
-const char* ssid       = "ONO38B2";
-const char* password   = "S780tSzc0T4j";
+const char* ssid       = "XXX";
+const char* password   = "xxx";
 
 const char* ntp_server = "pool.ntp.org";
 const long  gmt_offset_sec = 3600;
