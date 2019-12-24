@@ -23,8 +23,8 @@ String engine_on;
 unsigned long t; // timer
 
 //timer and WiFi
-const char* ssid       = "ONO38B2";
-const char* password   = "S780tSzc0T4j";
+const char* ssid       = "";
+const char* password   = "";
 
 const char* ntp_server = "pool.ntp.org";
 const long  gmt_offset_sec = 3600;
@@ -45,9 +45,9 @@ void timer_setup() {
   }
   Serial.println(" CONNECTED");
   configTime(gmt_offset_sec, daylight_offset_sec, ntp_server);
-
-  //WiFi.disconnect(true);
-  //WiFi.mode(WIFI_OFF);
+  getLocalTime(&timeinfo);
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
 }
 
 void setup() {
