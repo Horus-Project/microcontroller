@@ -13,7 +13,7 @@ ESP32 vibration detection and logging project
 |:-:|:-:|
 | 3V3 | VCC|
 | GND | GND |
-| D25 | SCL |
+| D22 | SCL |
 | D21 | SCA |
 
 ## ESP32 Programming
