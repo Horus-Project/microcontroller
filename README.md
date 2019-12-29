@@ -7,7 +7,7 @@ ESP32 vibration detection and logging project
 
 ### Accelerometers
 * [3-Axis, 12-bit/8-bit Digital Accelerometer MMA8452Q](https://www.electronicaembajadores.com/datos/pdf2/ss/ssac/ssac002.pdf)
-* 3-Axis Gyroscope & Accelerometer GY-521
+* [3-Axis Gyroscope & Accelerometer GY-521](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf)
 
 | ESP32 | GY521/MPU6050 |
 |:-:|:-:|
