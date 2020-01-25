@@ -13,9 +13,10 @@
 #define DEBUG 1
 #define SD_DEBUG 0
 #define LED 2
+#define LOGGING_CICLE 60000 // 1 minute
 
 int16_t a_x, a_y, a_z = 0; // Accelerometer variables
-int16_t max_x, max_y, max_z = 0; // Threshold to detect relevant movement
+int16_t max_x, max_y, max_z = -24000; // Threshold to detect relevant movement
 
 String values;
 String engine_on;
@@ -23,8 +24,8 @@ String engine_on;
 unsigned long t; // timer
 
 //timer and WiFi
-const char* ssid       = "ONO38B2";
-const char* password   = "S780tSzc0T4j";
+const char* ssid       = "";
+const char* password   = "";
 
 const char* ntp_server = "pool.ntp.org";
 const long  gmt_offset_sec = 3600;
