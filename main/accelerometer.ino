@@ -49,20 +49,7 @@ void read_acc() {
   a_y = Wire.read()<<8|Wire.read();
   a_z = Wire.read()<<8|Wire.read();
 
-  //a_x = abs(a_x);
-  //a_y = abs(a_y);
-  //a_z = abs(a_z);
-
   if(DEBUG) {
-    values = "X:"+String(a_x);// + ", Y:"+String(a_y)+", Z:"+String(a_z);// + " Maxes: ("+String(max_x)+","+String(max_y)+","+String(max_z)+") ";
-    /*if (a_x > max_x) {
-      values = values + "X";
-    }
-    if (a_y > max_y) {
-      values = values + "Y";
-    }
-    if (a_z > max_z) {
-      values = values + "Z";
-    }*/
+    values = "X:"+String(a_x); + " Y:"+String(a_y)+", Z:"+String(a_z);
   }
 }
