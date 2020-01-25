@@ -63,7 +63,7 @@ void setup() {
 
 void loop() {
   read_acc();
-  if (a_y > max_y && a_z > max_z) { //a_x > max_x &&
+  if (a_y > max_y || a_z > max_z || a_x > max_x) {
     digitalWrite(LED, HIGH);
     engine_on = "1";
   } else {
