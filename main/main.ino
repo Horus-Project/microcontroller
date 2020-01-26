@@ -46,7 +46,7 @@ void timer_setup() {
   }
   Serial.println(" CONNECTED");
   configTime(gmt_offset_sec, daylight_offset_sec, ntp_server);
-
+  getLocalTime(&timeinfo);
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
 }
