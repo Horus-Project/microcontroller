@@ -31,7 +31,7 @@ void read_acc(int16_t* ax, int16_t* ay, int16_t* az, int16_t* temp, int16_t* gx,
 
   *temp = Wire.read()<<8|Wire.read();
 
-  *g_x = Wire.read()<<8|Wire.read();
-  *g_y = Wire.read()<<8|Wire.read();
-  *g_z = Wire.read()<<8|Wire.read();
+  *gx = Wire.read()<<8|Wire.read();
+  *gy = Wire.read()<<8|Wire.read();
+  *gz = Wire.read()<<8|Wire.read();
 }

@@ -14,9 +14,9 @@
 #define SD_DEBUG 0
 #define LED 2
 
-int16_t a_x, a_y, a_z; // Accelerometer variables
+int16_t ax, ay, az; // Accelerometer variables
 int16_t temp;
-int16_t g_x, g_y, g_z; // Gyroscope variables
+int16_t gx, gy, gz; // Gyroscope variables
 
 String values;
 
