@@ -13,9 +13,12 @@
 #define DEBUG 1
 #define SD_DEBUG 0
 #define LED 2
+#define LOGGING_CICLE 60000 // 1 minute
 
-int16_t a_x, a_y, a_z = 0; // Accelerometer variables
-int16_t max_x, max_y, max_z = 0; // Threshold to detect relevant movement
+int16_t ax, ay, az; // Accelerometer measures
+int16_t temp; // temperature measure
+int16_t gx, gy, gz; // Gyroscope measures
+int16_t maxax, maxay, maxaz = -24000; // Threshold to detect relevant movement
 
 String values;
 String engine_on;
@@ -23,8 +26,8 @@ String engine_on;
 unsigned long t; // timer
 
 //timer and WiFi
-const char* ssid       = "";
-const char* password   = "";
+const char* ssid       = "Redmi";
+const char* password   = "017c1b12a8ee";
 
 const char* ntp_server = "pool.ntp.org";
 const long  gmt_offset_sec = 3600;
@@ -56,13 +59,13 @@ void setup() {
   pinMode(LED, OUTPUT);
   timer_setup();
   SD_setup();
-  calibrate();
+  calibrate(&maxax, &maxay, &maxaz);
   Serial.println("setup done");
 }
 
 void loop() {
-  read_acc();
-  if (a_y > max_y && a_z > max_z) { //a_x > max_x &&
+  read_acc(&ax, &ay, &az, &temp, &gx, &gy, &gz);
+  if (ay > maxay || az > maxaz || ax > maxax) {
     digitalWrite(LED, HIGH);
     engine_on = "1";
   } else {
