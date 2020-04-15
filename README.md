@@ -1,4 +1,4 @@
-# graboid
+# microcontroller
 ESP32 vibration detection and logging project
 
 ## Components
