@@ -23,7 +23,7 @@
 int16_t ax, ay, az; // Accelerometer measures
 int16_t temp; // temperature measure
 int16_t gx, gy, gz; // Gyroscope measures
-int16_t maxax, maxay, maxaz = -24000; // Threshold to detect engine_on
+int16_t eng_x, eng_y, eng_z = -24000; // Threshold to detect engine_on
 int16_t act_x, act_y, act_z = 0; // Threscold to detect activity;
 
 
@@ -82,14 +82,14 @@ void setup() {
   pinMode(LED, OUTPUT);
   timer_setup();
   SD_setup();
-  calibrate(&maxax, &maxay, &maxaz);
+  calibrate(&eng_x, &eng_y, &eng_z);
   Serial.println("setup done");
 }
 
 void loop() {
 
   read_acc(&ax, &ay, &az, &temp, &gx, &gy, &gz);
-  if (ay > maxay || az > maxaz || ax > maxax) {
+  if (ay > eng_y || az > eng_z || ax > eng_x) {
     digitalWrite(LED, HIGH);
     engine_on = "1";
   } else {
