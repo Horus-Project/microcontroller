@@ -14,6 +14,7 @@
 #define SD_DEBUG 1
 #define LED 2
 #define LOGGING_CICLE 60000 // 1 minute
+#define ENGINE_ON_CALIBRATION_VALUES = 500
 
 #define EIO              5      /* I/O error */
 #define ENOENT           2      /* No such file or directory */
@@ -22,7 +23,9 @@
 int16_t ax, ay, az; // Accelerometer measures
 int16_t temp; // temperature measure
 int16_t gx, gy, gz; // Gyroscope measures
-int16_t maxax, maxay, maxaz = -24000; // Threshold to detect relevant movement
+int16_t maxax, maxay, maxaz = -24000; // Threshold to detect engine_on
+int16_t act_x, act_y, act_z = 0; // Threscold to detect activity;
+
 
 String values;
 String engine_on;
