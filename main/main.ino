@@ -25,10 +25,12 @@ int16_t temp; // temperature measure
 int16_t gx, gy, gz; // Gyroscope measures
 int16_t eng_x, eng_y, eng_z = -24000; // Threshold to detect engine_on
 int16_t act_x, act_y, act_z = 0; // Threscold to detect activity;
+int eng_values = 0; //Number of values stored
 
 
 String values;
 String engine_on;
+String activity;
 int file_error;
 
 unsigned long t; // timer
@@ -88,7 +90,10 @@ void setup() {
 
 void loop() {
 
+  // READ ACCELEROMETER
   read_acc(&ax, &ay, &az, &temp, &gx, &gy, &gz);
+
+  // CALCULATE ENGINE_ON
   if (ay > eng_y || az > eng_z || ax > eng_x) {
     digitalWrite(LED, HIGH);
     engine_on = "1";
@@ -97,14 +102,37 @@ void loop() {
     engine_on = "0";
   }
 
-  //write values
+
+  if (eng_values < ENGINE_ON_CALIBRATION_VALUES && engine_on == "1") {
+    // Update activity threshold
+    if (abs(ax) > act_x) {
+      act_x = ax;
+    }
+    if (abs(ay) > act_y) {
+      act_y = ay;
+    }
+    if (abs(az) > act_z) {
+      act_z = az;
+    }
+    eng_values++;
+  } else if (engine_on == "1") {
+    // CALCULATE ACTIVITY
+    if (abs(ax) > act_x*1.5 || abs(ay) > act_y*1.5 || abs(az) > act_z*1.5) {
+      activity = "1";
+    } else {
+      activity = "0";
+    }
+  }
+
+
+  //WRITE LOG
   if(!getLocalTime(&timeinfo)){
     Serial.println("Failed to obtain time");
   }
   char timestamp[20];
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
   
-  String log_message = String(timestamp) + ";" + engine_on + "\n";
+  String log_message = String(timestamp) + ";" + engine_on + ";" + activity + "\n";
   if (DEBUG) {
     values = String(timestamp) + ";" + values + "\n";
     Serial.print(values);
