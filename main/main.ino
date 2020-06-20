@@ -14,7 +14,7 @@
 #define SD_DEBUG 1
 #define LED 2
 #define LOGGING_CICLE 60000 // 1 minute
-#define ENGINE_ON_CALIBRATION_VALUES = 500
+#define ENGINE_ON_CALIBRATION_VALUES 500
 
 #define EIO              5      /* I/O error */
 #define ENOENT           2      /* No such file or directory */
@@ -29,11 +29,12 @@ int eng_values = 0; //Number of values stored
 
 
 String values;
-String engine_on;
-String activity;
+String engine_on, cicle_engine_on;
+String activity, cicle_activity;
 int file_error;
 
 unsigned long t; // timer
+unsigned long lastLog;
 
 //timer and WiFi
 const char* ssid       = "";
@@ -109,9 +110,11 @@ void setup() {
   SD_setup();
   calibrate(&eng_x, &eng_y, &eng_z);
   Serial.println("setup done");
+  lastLog = 0 - LOGGING_CICLE;
 }
 
 void loop() {
+  t = millis();
 
   // READ ACCELEROMETER
   read_acc(&ax, &ay, &az, &temp, &gx, &gy, &gz);
@@ -120,6 +123,7 @@ void loop() {
   if (ay > eng_y || az > eng_z || ax > eng_x) {
     digitalWrite(LED, HIGH);
     engine_on = "1";
+    cicle_engine_on = "1";
   } else {
     digitalWrite(LED, LOW);
     engine_on = "0";
@@ -142,14 +146,19 @@ void loop() {
     // CALCULATE ACTIVITY
     if (abs(ax) > act_x*1.5 || abs(ay) > act_y*1.5 || abs(az) > act_z*1.5) {
       activity = "1";
+      cicle_activity = "1";
     } else {
       activity = "0";
     }
   }
 
-
-  write_log(engine_on, activity);
-
-
+  
+  if (t - lastLog >= LOGGING_CICLE) {
+    write_log(cicle_engine_on, cicle_activity);
+    cicle_engine_on = "0";
+    cicle_activity = "0";
+    lastLog = millis();
+  }
+  
   delay(10);
 }
