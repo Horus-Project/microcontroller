@@ -78,6 +78,29 @@ void timer_setup() {
   blink(2, 200, 200);
 }
 
+void write_log(String engine_on_value, String activity_value) {
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+  }
+  char timestamp[20];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
+
+  String log_message = String(timestamp) + ";" + engine_on_value + ";" + activity_value + "\n";
+  if (DEBUG) {
+    values = String(timestamp) + ";" + values + "\n";
+    Serial.print(values);
+  }
+
+  char results[1024];
+  strcpy(results, log_message.c_str());
+  file_error = append_file(SD, "/results.txt", results);
+  if (file_error) {
+    // signal SD card error: 2 or 5 long blinks
+    blink(file_error, 1000, 500);
+    delay(500);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   accelerometer_setup();
@@ -125,25 +148,8 @@ void loop() {
   }
 
 
-  //WRITE LOG
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-  }
-  char timestamp[20];
-  strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
-  
-  String log_message = String(timestamp) + ";" + engine_on + ";" + activity + "\n";
-  if (DEBUG) {
-    values = String(timestamp) + ";" + values + "\n";
-    Serial.print(values);
-  }
-  char results[1024];
-  strcpy(results, log_message.c_str());
-  file_error = append_file(SD, "/results.txt", results);
-  if (file_error) {
-    // signal SD card error: 2 or 5 long blinks
-    blink(file_error, 1000, 500);
-    delay(500);
-  }
+  write_log(engine_on, activity);
+
+
   delay(10);
 }
