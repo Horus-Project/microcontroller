@@ -86,10 +86,9 @@ void write_log(String engine_on_value, String activity_value) {
   char timestamp[20];
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
 
-  String log_message = String(timestamp) + ";" + engine_on_value + ";" + activity_value + "\n";
+  String log_message = String(timestamp) + ";" + engine_on_value + ";" + activity_value + ";\n";
   if (DEBUG) {
-    values = String(timestamp) + ";" + values + "\n";
-    Serial.print(values);
+    Serial.print(log_message);
   }
 
   char results[1024];
