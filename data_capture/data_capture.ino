@@ -13,6 +13,7 @@
 #define DEBUG 1
 #define SD_DEBUG 0
 #define LED 2
+#define WIFI_MAX_ATTEMPTS 10;
 
 int16_t ax, ay, az; // Accelerometer variables
 int16_t temp;
@@ -39,15 +40,19 @@ void timer_setup() {
     Serial.println("SSID or PASSWORD are not set!");
   }
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  int wifi_attempts = 0;
+  while (WiFi.status() != WL_CONNECTED || wifi_attempts > WIFI_MAX_ATTEMPTS) {
       delay(500);
-      Serial.print(".");
+      wifi_attempts++;
+      // Serial.print(".");
   }
-  Serial.println(" CONNECTED");
-  configTime(gmt_offset_sec, daylight_offset_sec, ntp_server);
-  getLocalTime(&timeinfo);
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_OFF);
+  // Serial.println(" CONNECTED");
+  if (WiFi.status() == WL_CONNECTED) {
+    configTime(gmt_offset_sec, daylight_offset_sec, ntp_server);
+    getLocalTime(&timeinfo);
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+  }
 }
 
 void setup() {
@@ -68,8 +73,8 @@ void loop() {
   }
   char timestamp[20];
   strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
-  values = "ax:" + String(ax) + " ay:" + String(ay) + " az:" + String(az) + "\n";
-  String log_message = String(timestamp) + ";" + values + "\n";
+  values = "ax:" + String(ax) + " ay:" + String(ay) + " az:" + String(az) + " temp:" + String(temp) + " gx:" + String(gx) + " gy:" + String(gy) + " gz:" + String(gz) + "\n";
+  String log_message = String(timestamp) + "|" + values + "\n";
   if (DEBUG) {
     Serial.print(values);
   }
