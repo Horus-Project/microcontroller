@@ -16,6 +16,9 @@
 #define LOGGING_CICLE 60000 // 1 minute
 #define ENGINE_ON_CALIBRATION_VALUES 500
 
+#define ENGINE_POSITIVE_PERCENT 10
+#define ACTIVITY_POSITIVE_PERCENT 20
+
 #define EIO              5      /* I/O error */
 #define ENOENT           2      /* No such file or directory */
 #define ECONNREFUSED    111     /* Connection refused */
@@ -29,8 +32,8 @@ int eng_values = 0; //Number of values stored
 
 
 String values;
-String engine_on, cicle_engine_on;
-String activity, cicle_activity;
+String activity, engine_on;
+int cicles, cicle_engine_on, cicle_activity;
 int file_error;
 
 unsigned long t; // timer
@@ -122,7 +125,7 @@ void loop() {
   if (ay > eng_y || az > eng_z || ax > eng_x) {
     digitalWrite(LED, HIGH);
     engine_on = "1";
-    cicle_engine_on = "1";
+    cicle_engine_on++;
   } else {
     digitalWrite(LED, LOW);
     engine_on = "0";
@@ -145,19 +148,30 @@ void loop() {
     // CALCULATE ACTIVITY
     if (abs(ax) > act_x*1.5 || abs(ay) > act_y*1.5 || abs(az) > act_z*1.5) {
       activity = "1";
-      cicle_activity = "1";
+      cicle_activity++;
     } else {
       activity = "0";
     }
   }
 
   
+  cicles++;
   if (t - lastLog >= LOGGING_CICLE) {
-    write_log(cicle_engine_on, cicle_activity);
-    cicle_engine_on = "0";
-    cicle_activity = "0";
+    // write cicle data
+    String engine_on_result = "0";
+    if (cicle_engine_on / cicles > ENGINE_POSITIVE_PERCENT) {
+      engine_on_result = "1";
+    }
+    String activity_result = "0";
+    if (cicle_activity / cicles) {
+      activity_result = "1";
+    }
+    write_log(engine_on_result, activity_result);
+    cicles = 0;
+    cicle_engine_on = 0;
+    cicle_activity = 0;
     lastLog = millis();
-  }
+  } 
   
   delay(10);
 }
